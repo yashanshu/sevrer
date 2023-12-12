@@ -27,7 +27,7 @@ type Config struct {
 const directoryPath = "~/static/uploads"
 
 func main() {
-
+    // inside paul
 
     http.HandleFunc("/", handleRoot)
     http.HandleFunc("/upload", handleUpload)
