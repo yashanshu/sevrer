@@ -12,28 +12,24 @@ import (
 )
 
 var allowedExtensions = map[string]bool{
+    ".md": true,
+    ".epub": true,
+    ".pdf": true,
+    ".txt": true,
     ".jpg": true,
     ".jpeg": true,
     ".png": true,
-    ".gif": true,
-}
-
-// TODO
-type Config struct {
-    Local  struct {UploadPath string}
-    Server struct {UploadPath string}
 }
 
 const directoryPath = "~/static/uploads"
 
 func main() {
 
-
     http.HandleFunc("/", handleRoot)
     http.HandleFunc("/upload", handleUpload)
     http.HandleFunc("/success", handleSuccess)
     port := ":6969"
-    fmt.Printf("Server is running on port %s\n", port)
+    log.Printf("Server is running on port %s\n", port)
     if err := http.ListenAndServe(port, nil); err != nil {
         //fmt.Println("Server Failed to Start:", err)
         log.Fatalf("Server Failed to Start:\n", err)
@@ -43,7 +39,6 @@ func main() {
 func handleRoot(w http.ResponseWriter, r *http.Request) {
     log.Printf("Accessed root path: %s %s", r.Method, r.URL.Path)
     http.ServeFile(w, r, "upload.html")
-    //fmt.Fprintf(w, "Welcome to the File Sync Serevr!")
 }
 
 func handleUpload(w http.ResponseWriter, r *http.Request) {
@@ -105,13 +100,31 @@ func handleSuccess(w http.ResponseWriter, r *http.Request) {
 
 func validateFile(file multipart.File, header *multipart.FileHeader) error {
     // validate file extensions
+    log.Printf("Validating file: %s", header.Filename)
     ext := filepath.Ext(header.Filename)
     if !allowedExtensions[ext] {
         return errors.New("Invalid file extension")
     }
+
     // Validate MIME type
+    buffer := make([]byte, 512) // read the first 512 bytes to detect the mime type
+    _, err := file.Read(buffer)
+    if err != nil {
+        return errors.New("Error reading the file")
+    }
+    mimeType := http.DetectContentType(buffer)
+    fmt.Printf(mimeType)
+    if mimeType != "image/jpeg" && mimeType != "image/png" && mimeType != "image/png" && 
+        mimeType != "text/Markdown" && mimeType != "application/epub+zip" && 
+        mimeType != "application/pdf" && mimeType != "text/plain" {
+            return errors.New("Invalid MIME type")
+        }
 
     // Validate file size (limit 5mb)
+    const maxFileSize = 5 << 20 // shift 5(`101`) to 20 places left.
+    if header.Size > maxFileSize {
+        return errors.New("File size exceeds the limit")
+    }
 
     // some more
 
