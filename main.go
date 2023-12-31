@@ -35,12 +35,8 @@ func init() {
 }
 
 func main() {
-<<<<<<< HEAD
-    // inside paul
-=======
 
     fullDirPath = filepath.Join(homeDir, constantDirPath)
->>>>>>> refs/remotes/origin/main
 
     http.HandleFunc("/", handleRoot)
     http.HandleFunc("/upload", handleUpload)
